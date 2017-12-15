@@ -19,7 +19,6 @@ twitter.getService = function() {
 // 認証を行う（必須）
 function authorize() {
   twitter.authorize();
-  
 }
 
 // 認証をリセット
@@ -59,29 +58,52 @@ function postUpdateStatus() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sh = ss.getSheetByName('post');
   var shme = ss.getSheetByName("memory");
-
+  var sh_trigger = ss.getSheetByName('trigger_');
 
 function setTrigger() {
- 
+  var shme = ss.getSheetByName("memory");
+  var date = new Date();
   var triggerDay = sh.getRange("J2").getValue();
   
   Logger.log(triggerDay);
   
-  var trigger = ScriptApp.newTrigger("main").timeBased().at(triggerDay).create();
-  var tweet = sh.getRange("A2:F2");
-  
+  var tweet = sh.getRange("A2:F2");  
   var targetRange = shme.getRange(shme.getLastRow()+1, 1, 1, 6);
   
   tweet.copyTo(targetRange);
   
-  var idRange = shme.getRange(shme.getLastRow(), 7)
-  idRange.setValue(trigger.getUniqueId());
+  if(date.getDate() == triggerDay.getDate()){
+    var trigger = ScriptApp.newTrigger("main").timeBased().at(triggerDay).create();
+    var idRange = shme.getRange(shme.getLastRow(), 7);
+    Logger.log(trigger.getTriggerSource());
+    idRange.setValue(trigger.getUniqueId());
+  }
   
   var shx = ss.getSheetByName("backup");
   
-  var buckupRange = shx.getRange(shx.getLastRow()+1, 1, 1, 6);
-  tweet.copyTo(buckupRange);
-  
+  var backupRange = shx.getRange(shx.getLastRow()+1, 1, 1, 6);
+  tweet.copyTo(backupRange);
+  var backupRangeID = shx.getRange(shx.getLastRow(), 7);
+  backupRangeID.setValue(trigger.getUniqueId());
+}
+
+/***  日付が変わった時に、その日分のトリガーを仕込む。 ***/
+function changeTriggers(){
+  var trigger =[];
+  var time = [];
+  var tweet = [];
+  var idRow = ID_lastRow(7)+1;
+  for(var i=0; i < sh_trigger.getLastRow(); i++) {
+    tweet[i] = sh_trigger.getRange(i+1, 3).getValue();
+    time[i] = sh_trigger.getRange(i+1, 9).getValue();
+    if(typeof time[i]=="object"){
+      trigger[i] = ScriptApp.newTrigger("main").timeBased().at(time[i]).create().getUniqueId();
+      shme.getRange(idRow +i, 7).setValue(trigger[i]);
+    }
+  }
+  Logger.log(tweet);
+  Logger.log(time);
+  Logger.log(trigger);
 }
 
 // UNIQUE IDが一致したトリガーを削除
@@ -98,6 +120,7 @@ function deleteTrigger(row) {
 
 // 実行したいスクリプト本体
 function main() {
+  var shme = ss.getSheetByName("memory");
   
   var compRow = getLastRowNumber_Column() +1;
   shme.getRange(compRow, 8).setValue("実行済み");
@@ -163,3 +186,14 @@ function findRow(val){ //シート内検索
   }
   return 0;
 }
+
+function ID_lastRow(val){ //memoryのval列からデータの入力されている最終行番号を取得する
+　var last_row = shme.getLastRow();
+
+　for(var i = last_row; i >= 1; i--){
+　　if(shme.getRange(i, val).getValue() != ''){
+　　　return i;
+　　}
+　}
+}
+
