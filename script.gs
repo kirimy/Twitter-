@@ -31,13 +31,6 @@ function authCallback(request) {
   return twitter.authCallback(request);
 }
 
-// タイムラインを取得
-function getUserTimeline() {
-  var service  = twitter.getService();
-  var response = service.fetch('https://api.twitter.com/1.1/statuses/user_timeline.json');
-  Logger.log(JSON.parse(response));
-}
-
 // ツイートを投稿
 function postUpdateStatus() {
   var service  = twitter.getService();
@@ -47,7 +40,6 @@ function postUpdateStatus() {
   });
   Logger.log(JSON.parse(response));
 }
-
 
 
 /***   シートのやつ   ****/
