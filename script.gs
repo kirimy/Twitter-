@@ -1,7 +1,7 @@
 // OAuth1認証用インスタンス
 var twitter = TwitterWebService.getInstance(
-  'feEwUJqXZn22lVaivGP7V30MC',
-  'FjfnCSfGPBqeoO38byxwT9cqqQRlqzrh10dXp84BEsxArfk0uJ'
+  '***CONSUMER_KEY***',
+  '***CONSUMER_SECRET***'
 );
 
 //OAuth1ライブラリを導入したうえで、getServiceを上書き
